@@ -14,12 +14,9 @@ for _p in [_project_root, _server_dir, _app_dir]:
 import types
 if "server" not in sys.modules:
     try:
-        import app
         _sm = types.ModuleType("server")
         _sm.__path__ = [_server_dir]
-        _sm.app = app
         sys.modules["server"] = _sm
-        sys.modules["server.app"] = app
     except Exception as _e:
         print(f"Warning: failed to alias server module: {_e}")
 
@@ -44,27 +41,24 @@ from server.app.api.moderation import router as moderation_router
 from server.app.api.feedback import router as feedback_router
 
 _db_initialized = False
-_db_lock = asyncio.Lock()
 
 async def ensure_db_ready():
     global _db_initialized
     if _db_initialized:
         return
-    async with _db_lock:
-        if not _db_initialized:
-            try:
-                await init_db()
-                if settings.DEMO_MODE:
-                    from server.app.models.all_models import Agent
-                    from sqlalchemy import select, func
-                    async with AsyncSessionLocal() as session:
-                        count = (await session.execute(select(func.count(Agent.id)))).scalar() or 0
-                        if count == 0:
-                            from server.app.seed_demo import seed
-                            await seed()
-                _db_initialized = True
-            except Exception as e:
-                print(f"ensure_db_ready exception: {e}")
+    try:
+        await init_db()
+        if settings.DEMO_MODE:
+            from server.app.models.all_models import Agent
+            from sqlalchemy import select, func
+            async with AsyncSessionLocal() as session:
+                count = (await session.execute(select(func.count(Agent.id)))).scalar() or 0
+                if count == 0:
+                    from server.app.seed_demo import seed
+                    await seed()
+        _db_initialized = True
+    except Exception as e:
+        print(f"ensure_db_ready exception: {e}", flush=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -114,6 +108,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Include Routers under BOTH /api/v1 and /v1 for Vercel/proxy compatibility
 app.include_router(health_router, prefix="")
 app.include_router(health_router, prefix="/health")
+app.include_router(health_router, prefix="/api")
+app.include_router(health_router, prefix="/api/health")
 
 for prefix in ["/api/v1", "/v1"]:
     app.include_router(health_router, prefix=prefix)
@@ -130,10 +126,21 @@ for prefix in ["/api/v1", "/v1"]:
 @app.api_route("/api/v1/seed", methods=["GET", "POST"])
 @app.api_route("/v1/seed", methods=["GET", "POST"])
 async def trigger_seed():
-    await init_db()
-    from server.app.seed_demo import seed
-    await seed()
-    return {"status": "ok", "message": "Demo data seeded successfully"}
+    try:
+        await init_db()
+        from server.app.seed_demo import seed
+        await seed()
+        return {"status": "ok", "message": "Demo data seeded successfully"}
+    except Exception as e:
+        import traceback
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error",
+                "message": str(e),
+                "traceback": traceback.format_exc().splitlines()
+            }
+        )
 
 # Serve production frontend if built
 import os

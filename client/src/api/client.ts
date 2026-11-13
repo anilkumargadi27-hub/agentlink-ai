@@ -82,13 +82,18 @@ export const api = {
   },
 
   async seedDemo(): Promise<any> {
-    const res = await fetch(`${API_BASE}/seed`, { method: 'POST' });
-    if (!res.ok) {
-      // Fallback to GET /api/v1/seed
-      const getRes = await fetch(`${API_BASE}/seed`);
-      if (!getRes.ok) throw new Error('Failed to seed network');
-      return getRes.json();
+    try {
+      const res = await fetch(`${API_BASE}/seed`, { method: 'POST' });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('POST /api/v1/seed failed, trying GET fallback:', e);
     }
-    return res.json();
+    
+    const getRes = await fetch(`${API_BASE}/seed`);
+    if (!getRes.ok) {
+      const errText = await getRes.text();
+      throw new Error(`Failed to seed network (${getRes.status}): ${errText}`);
+    }
+    return getRes.json();
   }
 };

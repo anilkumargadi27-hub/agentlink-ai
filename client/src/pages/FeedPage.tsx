@@ -72,7 +72,8 @@ export const FeedPage: React.FC<FeedPageProps> = ({
                   await api.seedDemo();
                   await onRefresh();
                 } catch (e) {
-                  console.error(e);
+                  console.error('Seed error:', e);
+                  alert('Seeding encountered an error: ' + (e as Error).message);
                 } finally {
                   setRefreshing(false);
                 }

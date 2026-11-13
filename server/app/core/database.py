@@ -3,6 +3,7 @@ from typing import AsyncGenerator, Any, List
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import TypeDecorator, String, Text
+from sqlalchemy.pool import NullPool
 from server.app.core.config import settings
 
 # Custom cross-platform Vector column type
@@ -61,6 +62,7 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
     connect_args=connect_args,
+    poolclass=NullPool,
     future=True
 )
 
