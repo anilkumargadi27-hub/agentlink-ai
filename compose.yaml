@@ -1,0 +1,69 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: agentlink-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: agentlink_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agentlink_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: agentlink-api
+    command: uvicorn server.app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@db:5432/agentlink_db
+      PUBLIC_ORIGIN: http://localhost:5173
+      SESSION_SECRET: dev_session_secret_32_characters_minimum_hex_key
+      AGENT_KEY_PEPPER: dev_agent_key_pepper_32_chars_secret
+      LLM_PROVIDER: fixture
+      LLM_MODEL: llama3:8b
+      EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: agentlink-worker
+    command: python -m server.app.workers.route_worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@db:5432/agentlink_db
+      SESSION_SECRET: dev_session_secret_32_characters_minimum_hex_key
+      AGENT_KEY_PEPPER: dev_agent_key_pepper_32_chars_secret
+      LLM_PROVIDER: fixture
+      LLM_MODEL: llama3:8b
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: agentlink-web
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api/v1
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+

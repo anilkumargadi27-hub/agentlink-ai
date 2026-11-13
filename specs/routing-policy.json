@@ -1,0 +1,34 @@
+{
+  "policy_version": "hybrid-v1",
+  "weights": {
+    "dense_semantic": 0.65,
+    "topic_overlap": 0.20,
+    "business_compatibility": 0.15
+  },
+  "default_threshold": 0.60,
+  "recipient_cap": 10,
+  "business_compatibility_rules": [
+    {
+      "id": "RULE_FOOD_PAYMENTS",
+      "name": "Food Delivery to Payment Gateway Promotion",
+      "post_intent": "offer",
+      "post_topic": "food_delivery",
+      "agent_interest_keyword": "payment"
+    },
+    {
+      "id": "RULE_RETAIL_CARDS",
+      "name": "Retail Promotion to Card Checkout Benefits",
+      "post_intent": "offer",
+      "post_topic": "retail_checkout",
+      "agent_interest_keyword": "card"
+    },
+    {
+      "id": "RULE_VEHICLE_FINANCE",
+      "name": "Vehicle Launch to Consumer Financing Loans",
+      "post_intent": "announcement",
+      "post_topic": "vehicle_launch",
+      "agent_interest_keyword": "financing"
+    }
+  ]
+}
+

@@ -1,0 +1,171 @@
+[
+  {
+    "case_id": "CASE_01",
+    "title": "Diwali 5% food delivery promotion",
+    "content": "Special festive restaurant dining discount for food orders across major metro locations.",
+    "topics": [
+      "food_delivery",
+      "merchant_promotion"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "PhonePe",
+      "HDFC Bank"
+    ],
+    "expected_negative": [
+      "Bajaj Auto",
+      "Flipkart"
+    ]
+  },
+  {
+    "case_id": "CASE_02",
+    "title": "Marketplace festive electronics mega sale",
+    "content": "Exciting deals and shopping discounts on laptops and gadgets with instant cart checkout.",
+    "topics": [
+      "retail_checkout",
+      "merchant_promotion"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "HDFC Bank",
+      "PhonePe"
+    ],
+    "expected_negative": [
+      "Swiggy",
+      "Bajaj Auto"
+    ]
+  },
+  {
+    "case_id": "CASE_03",
+    "title": "Electric bike launch with flexible EMI",
+    "content": "Announcing the brand new electric scooter lineup with low-interest two-wheeler vehicle financing.",
+    "topics": [
+      "vehicle_launch",
+      "vehicle_finance"
+    ],
+    "intent": "announcement",
+    "expected_positive": [
+      "Bajaj Auto",
+      "HDFC Bank"
+    ],
+    "expected_negative": [
+      "Swiggy",
+      "PhonePe"
+    ]
+  },
+  {
+    "case_id": "CASE_04",
+    "title": "Merchant QR code scanner rollout for payments",
+    "content": "Empowering local retailers with contactless UPI payment terminal integration and cashback.",
+    "topics": [
+      "upi_payment",
+      "merchant_promotion"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "PhonePe",
+      "Swiggy"
+    ],
+    "expected_negative": [
+      "Bajaj Auto"
+    ]
+  },
+  {
+    "case_id": "CASE_05",
+    "title": "Credit card bonus reward points on grocery purchases",
+    "content": "Exclusive banking cardholder benefits with 5X reward points on all supermarket transactions.",
+    "topics": [
+      "card_benefit",
+      "merchant_promotion"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "HDFC Bank",
+      "PhonePe"
+    ],
+    "expected_negative": [
+      "Bajaj Auto"
+    ]
+  },
+  {
+    "case_id": "CASE_06",
+    "title": "Motorcycle dealer network expansion",
+    "content": "Opening 50 new dealership experience centers for commuter bikes and electric mobility.",
+    "topics": [
+      "vehicle_launch"
+    ],
+    "intent": "announcement",
+    "expected_positive": [
+      "Bajaj Auto"
+    ],
+    "expected_negative": [
+      "Swiggy",
+      "Flipkart"
+    ]
+  },
+  {
+    "case_id": "CASE_07",
+    "title": "Express grocery 10-minute order delivery",
+    "content": "Instant delivery service partnering with local kirana merchants and restaurant vendors.",
+    "topics": [
+      "food_delivery"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "PhonePe"
+    ],
+    "expected_negative": [
+      "Bajaj Auto",
+      "Flipkart"
+    ]
+  },
+  {
+    "case_id": "CASE_08",
+    "title": "Online ecommerce shopping carnival discount",
+    "content": "Great seasonal discounts across apparel, fashion, and retail cart checkouts.",
+    "topics": [
+      "retail_checkout"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "Flipkart",
+      "PhonePe"
+    ],
+    "expected_negative": [
+      "Bajaj Auto"
+    ]
+  },
+  {
+    "case_id": "CASE_09",
+    "title": "Automobile two-wheeler zero down payment loan",
+    "content": "Consumer financing loan program for college students and professionals buying scooters.",
+    "topics": [
+      "vehicle_finance"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "HDFC Bank",
+      "Bajaj Auto"
+    ],
+    "expected_negative": [
+      "Swiggy"
+    ]
+  },
+  {
+    "case_id": "CASE_10",
+    "title": "Merchant payment settlement discount",
+    "content": "Fast instant bank settlement for merchants accepting digital UPI and cards.",
+    "topics": [
+      "upi_payment",
+      "merchant_promotion"
+    ],
+    "intent": "offer",
+    "expected_positive": [
+      "PhonePe",
+      "HDFC Bank"
+    ],
+    "expected_negative": [
+      "Bajaj Auto"
+    ]
+  }
+]

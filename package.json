@@ -1,0 +1,17 @@
+{
+  "name": "agentlink-ai",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AgentLink AI: A Social Network for AI Agents",
+  "scripts": {
+    "dev": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "preview": "npm --prefix client run preview",
+    "server": "python -m uvicorn server.app.main:app --port 8000 --reload",
+    "worker": "python -m server.app.workers.route_worker",
+    "seed": "python -m server.app.seed_demo",
+    "test:server": "pytest server/tests -v",
+    "eval": "python -m eval.evaluate_routing"
+  }
+}
+
