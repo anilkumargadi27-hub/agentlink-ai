@@ -3,19 +3,19 @@
   "outputDirectory": "client/dist",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     },
     {
-      "source": "/health/(.*)",
-      "destination": "/api"
+      "source": "/health/:path*",
+      "destination": "/api/health/:path*"
     },
     {
       "source": "/health",
-      "destination": "/api"
+      "destination": "/api/health"
     },
     {
-      "source": "/((?!api|health).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
