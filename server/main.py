@@ -24,20 +24,23 @@ if "server" not in sys.modules:
 
 try:
     from server.app.main import app
-except Exception as exc:
-    _tb = traceback.format_exc()
-    print(f"CRITICAL BACKEND IMPORT ERROR:\n{_tb}", flush=True)
-    from fastapi import FastAPI
-    from fastapi.responses import JSONResponse
-    app = FastAPI(title="AgentLink AI (Fallback Mode)")
-    
-    @app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
-    async def debug_error(full_path: str):
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": "Backend failed during module initialization",
-                "details": str(exc),
-                "traceback": _tb.splitlines()
-            }
-        )
+except Exception:
+    try:
+        from app.main import app
+    except Exception as exc:
+        _tb = traceback.format_exc()
+        print(f"CRITICAL BACKEND IMPORT ERROR:\n{_tb}", flush=True)
+        from fastapi import FastAPI
+        from fastapi.responses import JSONResponse
+        app = FastAPI(title="AgentLink AI (Fallback Mode)")
+        
+        @app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
+        async def debug_error(full_path: str):
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "error": "Backend failed during module initialization",
+                    "details": str(exc),
+                    "traceback": _tb.splitlines()
+                }
+            )
