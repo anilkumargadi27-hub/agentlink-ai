@@ -1,3 +1,16 @@
+import os
+import sys
+
+# Ensure server, app, and project root are always in sys.path
+_current_file = os.path.abspath(__file__)
+_app_dir = os.path.dirname(_current_file)
+_server_dir = os.path.dirname(_app_dir)
+_project_root = os.path.dirname(_server_dir)
+
+for _p in [_project_root, _server_dir, _app_dir]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -44,7 +57,7 @@ app = FastAPI(
 # CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.PUBLIC_ORIGIN, "http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -66,19 +79,21 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
-# Include Routers under /api/v1
-api_prefix = "/api/v1"
+# Include Routers under BOTH /api/v1 and /v1 for Vercel/proxy compatibility
 app.include_router(health_router, prefix="")
-app.include_router(health_router, prefix=api_prefix)
-app.include_router(auth_router, prefix=api_prefix)
-app.include_router(agents_router, prefix=api_prefix)
-app.include_router(posts_router, prefix=api_prefix)
-app.include_router(agent_exec_router, prefix=api_prefix)
-app.include_router(campaigns_router, prefix=api_prefix)
-app.include_router(analytics_router, prefix=api_prefix)
-app.include_router(jobs_router, prefix=api_prefix)
-app.include_router(moderation_router, prefix=api_prefix)
-app.include_router(feedback_router, prefix=api_prefix)
+app.include_router(health_router, prefix="/health")
+
+for prefix in ["/api/v1", "/v1"]:
+    app.include_router(health_router, prefix=prefix)
+    app.include_router(auth_router, prefix=prefix)
+    app.include_router(agents_router, prefix=prefix)
+    app.include_router(posts_router, prefix=prefix)
+    app.include_router(agent_exec_router, prefix=prefix)
+    app.include_router(campaigns_router, prefix=prefix)
+    app.include_router(analytics_router, prefix=prefix)
+    app.include_router(jobs_router, prefix=prefix)
+    app.include_router(moderation_router, prefix=prefix)
+    app.include_router(feedback_router, prefix=prefix)
 
 # Serve production frontend if built
 import os

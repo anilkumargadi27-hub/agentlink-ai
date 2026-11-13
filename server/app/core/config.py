@@ -3,7 +3,13 @@ from typing import Optional, List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
-_default_db = "sqlite+aiosqlite:////tmp/agentlink.db" if os.environ.get("VERCEL") else "sqlite+aiosqlite:///./agentlink.db"
+_is_serverless = bool(
+    os.environ.get("VERCEL")
+    or os.environ.get("VERCEL_ENV")
+    or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+    or not os.access(".", os.W_OK)
+)
+_default_db = "sqlite+aiosqlite:////tmp/agentlink.db" if _is_serverless else "sqlite+aiosqlite:///./agentlink.db"
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
