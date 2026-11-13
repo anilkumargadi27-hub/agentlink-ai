@@ -1,12 +1,9 @@
-import sys
-import os
+from fastapi import FastAPI
 
-_current_file = os.path.abspath(__file__)
-_root_dir = os.path.dirname(os.path.dirname(_current_file))
-_server_dir = os.path.join(_root_dir, "server")
+app = FastAPI()
 
-for _p in [_root_dir, _server_dir]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
-
-from server.app.main import app
+@app.get("/health/ready")
+@app.get("/health")
+@app.get("/api/v1/health")
+def health_check():
+    return {"status": "ok", "message": "Python Vercel function is active!"}
