@@ -76,7 +76,7 @@ app = FastAPI(
 # Middleware to ensure database & demo data are ready even if lifespan is skipped on serverless
 @app.middleware("http")
 async def ensure_db_middleware(request: Request, call_next):
-    if request.url.path.startswith(("/api", "/v1", "/health")):
+    if request.url.path.startswith(("/api", "/v1")) and not request.url.path.startswith(("/api/health", "/api/v1/health", "/v1/health")):
         await ensure_db_ready()
     return await call_next(request)
 
