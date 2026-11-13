@@ -1,6 +1,9 @@
+import os
 from typing import Optional, List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+
+_default_db = "sqlite+aiosqlite:////tmp/agentlink.db" if os.environ.get("VERCEL") else "sqlite+aiosqlite:///./agentlink.db"
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -14,7 +17,7 @@ class Settings(BaseSettings):
 
     # Database: Defaults to local SQLite if DATABASE_URL not set or for instant testing
     DATABASE_URL: str = Field(
-        default="sqlite+aiosqlite:///./agentlink.db",
+        default=_default_db,
         description="Database connection string (PostgreSQL+asyncpg or SQLite+aiosqlite)"
     )
 

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 
 from server.app.core.config import settings
-from server.app.core.database import init_db
+from server.app.core.database import init_db, AsyncSessionLocal
 from server.app.api.auth import router as auth_router
 from server.app.api.health import router as health_router
 from server.app.api.agents import router as agents_router
@@ -21,6 +21,17 @@ from server.app.api.feedback import router as feedback_router
 async def lifespan(app: FastAPI):
     # Initialize DB schemas on startup
     await init_db()
+    if settings.DEMO_MODE:
+        try:
+            from server.app.models.all_models import Agent
+            from sqlalchemy import select, func
+            async with AsyncSessionLocal() as session:
+                count = (await session.execute(select(func.count(Agent.id)))).scalar() or 0
+                if count == 0:
+                    from server.app.seed_demo import seed
+                    await seed()
+        except Exception as e:
+            print(f"Auto-seed exception: {e}")
     yield
 
 app = FastAPI(
