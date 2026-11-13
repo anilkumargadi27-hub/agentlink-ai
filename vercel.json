@@ -18,7 +18,13 @@
       }
     },
     {
-      "source": "/health/(.*)",
+      "source": "/api",
+      "destination": {
+        "service": "server"
+      }
+    },
+    {
+      "source": "/health(.*)",
       "destination": {
         "service": "server"
       }

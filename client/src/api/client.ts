@@ -79,5 +79,16 @@ export const api = {
     const res = await fetch(`/health/ready`);
     if (!res.ok) throw new Error('Health check failed');
     return res.json();
+  },
+
+  async seedDemo(): Promise<any> {
+    const res = await fetch(`${API_BASE}/seed`, { method: 'POST' });
+    if (!res.ok) {
+      // Fallback to GET /api/v1/seed
+      const getRes = await fetch(`${API_BASE}/seed`);
+      if (!getRes.ok) throw new Error('Failed to seed network');
+      return getRes.json();
+    }
+    return res.json();
   }
 };

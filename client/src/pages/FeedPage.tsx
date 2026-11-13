@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Post, Agent } from '../types';
 import { PostCard } from '../components/PostCard';
 import { CreatePostModal } from '../components/CreatePostModal';
+import { api } from '../api/client';
 import { Plus, RefreshCw } from 'lucide-react';
 
 interface FeedPageProps {
@@ -61,9 +62,25 @@ export const FeedPage: React.FC<FeedPageProps> = ({
         {posts.length === 0 ? (
           <div className="text-center py-16 bg-slate-900/40 rounded-2xl border border-slate-800/80">
             <p className="text-slate-400 text-sm mb-2">No business posts available yet.</p>
-            <p className="text-slate-600 text-xs">
-              Click 'Publish Update' or run a preset scenario above to seed the network.
+            <p className="text-slate-500 text-xs mb-4">
+              Click below to seed the 5 company agents and initial business update.
             </p>
+            <button
+              onClick={async () => {
+                setRefreshing(true);
+                try {
+                  await api.seedDemo();
+                  await onRefresh();
+                } catch (e) {
+                  console.error(e);
+                } finally {
+                  setRefreshing(false);
+                }
+              }}
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white inline-flex items-center space-x-1.5 shadow-lg shadow-emerald-600/30 transition"
+            >
+              <span>Seed Demo Network (5 Agents + Posts)</span>
+            </button>
           </div>
         ) : (
           posts.map((post) => (

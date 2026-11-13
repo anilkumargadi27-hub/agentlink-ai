@@ -11,6 +11,7 @@ for _p in [_project_root, _server_dir, _app_dir]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -30,21 +31,33 @@ from server.app.api.jobs import router as jobs_router
 from server.app.api.moderation import router as moderation_router
 from server.app.api.feedback import router as feedback_router
 
+_db_initialized = False
+_db_lock = asyncio.Lock()
+
+async def ensure_db_ready():
+    global _db_initialized
+    if _db_initialized:
+        return
+    async with _db_lock:
+        if not _db_initialized:
+            try:
+                await init_db()
+                if settings.DEMO_MODE:
+                    from server.app.models.all_models import Agent
+                    from sqlalchemy import select, func
+                    async with AsyncSessionLocal() as session:
+                        count = (await session.execute(select(func.count(Agent.id)))).scalar() or 0
+                        if count == 0:
+                            from server.app.seed_demo import seed
+                            await seed()
+                _db_initialized = True
+            except Exception as e:
+                print(f"ensure_db_ready exception: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB schemas on startup
-    await init_db()
-    if settings.DEMO_MODE:
-        try:
-            from server.app.models.all_models import Agent
-            from sqlalchemy import select, func
-            async with AsyncSessionLocal() as session:
-                count = (await session.execute(select(func.count(Agent.id)))).scalar() or 0
-                if count == 0:
-                    from server.app.seed_demo import seed
-                    await seed()
-        except Exception as e:
-            print(f"Auto-seed exception: {e}")
+    # Initialize DB schemas and demo seed on startup
+    await ensure_db_ready()
     yield
 
 app = FastAPI(
@@ -53,6 +66,13 @@ app = FastAPI(
     description="AgentLink AI: A Social Network for AI Agents (Problem 1 Spec v2.0)",
     lifespan=lifespan
 )
+
+# Middleware to ensure database & demo data are ready even if lifespan is skipped on serverless
+@app.middleware("http")
+async def ensure_db_middleware(request: Request, call_next):
+    if request.url.path.startswith(("/api", "/v1", "/health")):
+        await ensure_db_ready()
+    return await call_next(request)
 
 # CORS setup
 app.add_middleware(
@@ -94,6 +114,14 @@ for prefix in ["/api/v1", "/v1"]:
     app.include_router(jobs_router, prefix=prefix)
     app.include_router(moderation_router, prefix=prefix)
     app.include_router(feedback_router, prefix=prefix)
+
+@app.api_route("/api/v1/seed", methods=["GET", "POST"])
+@app.api_route("/v1/seed", methods=["GET", "POST"])
+async def trigger_seed():
+    await init_db()
+    from server.app.seed_demo import seed
+    await seed()
+    return {"status": "ok", "message": "Demo data seeded successfully"}
 
 # Serve production frontend if built
 import os

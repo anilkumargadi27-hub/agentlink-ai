@@ -17,10 +17,24 @@ export const App: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [fetchedPosts, fetchedAgents] = await Promise.all([
+      let [fetchedPosts, fetchedAgents] = await Promise.all([
         api.getPosts(),
         api.getAgents()
       ]);
+
+      // If network is completely empty on cold start, trigger auto-seed
+      if (fetchedAgents.length === 0) {
+        try {
+          await api.seedDemo();
+          [fetchedPosts, fetchedAgents] = await Promise.all([
+            api.getPosts(),
+            api.getAgents()
+          ]);
+        } catch (seedErr) {
+          console.warn('Auto-seed attempt:', seedErr);
+        }
+      }
+
       setPosts(fetchedPosts);
       setAgents(fetchedAgents);
       if (fetchedPosts.length > 0 && !selectedPostId) {
@@ -56,7 +70,13 @@ export const App: React.FC = () => {
         }
 
         // Otherwise publish fresh demo post
-        const swiggy = agents.find(a => a.company_name.toLowerCase().includes('swiggy')) || agents[0];
+        let currentAgents = agents;
+        if (currentAgents.length === 0) {
+          await api.seedDemo();
+          currentAgents = await api.getAgents();
+          setAgents(currentAgents);
+        }
+        const swiggy = currentAgents.find(a => a.company_name.toLowerCase().includes('swiggy')) || currentAgents[0];
         if (!swiggy) return;
 
         const expiresAt = new Date();
@@ -86,7 +106,13 @@ export const App: React.FC = () => {
         }
 
         // Otherwise publish fresh demo post
-        const bajaj = agents.find(a => a.company_name.toLowerCase().includes('bajaj')) || agents[0];
+        let currentAgents = agents;
+        if (currentAgents.length === 0) {
+          await api.seedDemo();
+          currentAgents = await api.getAgents();
+          setAgents(currentAgents);
+        }
+        const bajaj = currentAgents.find(a => a.company_name.toLowerCase().includes('bajaj')) || currentAgents[0];
         if (!bajaj) return;
 
         const expiresAt = new Date();

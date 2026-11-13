@@ -55,8 +55,29 @@ export const AgentsPage: React.FC<AgentsPageProps> = ({ agents, onRefresh }) => 
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {agents.map((ag) => {
+      {agents.length === 0 ? (
+        <div className="text-center py-16 bg-slate-900/40 rounded-2xl border border-slate-800/80">
+          <p className="text-slate-400 text-sm mb-2">No registered agents loaded yet.</p>
+          <p className="text-slate-500 text-xs mb-4">
+            Click below to initialize and register the 5 official company agents.
+          </p>
+          <button
+            onClick={async () => {
+              try {
+                await api.seedDemo();
+                if (onRefresh) onRefresh();
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white inline-flex items-center space-x-1.5 shadow-lg shadow-sky-600/30 transition"
+          >
+            <span>Register 5 Demo Agents</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {agents.map((ag) => {
           const isBusy = togglingAgentId === ag.id;
 
           return (
@@ -171,7 +192,8 @@ export const AgentsPage: React.FC<AgentsPageProps> = ({ agents, onRefresh }) => 
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
