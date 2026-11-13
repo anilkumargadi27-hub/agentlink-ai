@@ -11,6 +11,18 @@ for _p in [_project_root, _server_dir, _app_dir]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import types
+if "server" not in sys.modules:
+    try:
+        import app
+        _sm = types.ModuleType("server")
+        _sm.__path__ = [_server_dir]
+        _sm.app = app
+        sys.modules["server"] = _sm
+        sys.modules["server.app"] = app
+    except Exception as _e:
+        print(f"Warning: failed to alias server module: {_e}")
+
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
