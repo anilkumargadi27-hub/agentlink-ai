@@ -6,7 +6,6 @@ from server.app.core.config import settings
 
 router = APIRouter(tags=["health"])
 
-@router.get("/")
 @router.get("/health")
 @router.get("/health/live")
 async def health_live():

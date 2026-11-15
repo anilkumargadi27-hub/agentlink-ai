@@ -128,7 +128,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 # Include Routers under BOTH /api/v1 and /v1 for Vercel/proxy compatibility
 app.include_router(health_router, prefix="")
-app.include_router(health_router, prefix="/health")
 app.include_router(health_router, prefix="/api")
 app.include_router(health_router, prefix="/api/health")
 
@@ -168,7 +167,12 @@ import os
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-client_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "client", "dist"))
+candidate_dirs = [
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "client", "dist")),
+    os.path.abspath(os.path.join(os.getcwd(), "client", "dist")),
+    os.path.abspath("client/dist"),
+]
+client_dist = next((d for d in candidate_dirs if os.path.exists(d)), candidate_dirs[0])
 if os.path.exists(client_dist):
     assets_dir = os.path.join(client_dist, "assets")
     if os.path.exists(assets_dir):
@@ -176,7 +180,7 @@ if os.path.exists(client_dist):
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
-        if full_path.startswith("api/") or full_path.startswith("health") or full_path.startswith("docs") or full_path.startswith("openapi.json"):
+        if full_path.startswith("api") or full_path.startswith("health") or full_path.startswith("docs") or full_path.startswith("openapi.json"):
             return JSONResponse(status_code=404, content={"detail": "Not Found"})
         index_path = os.path.join(client_dist, "index.html")
         if os.path.exists(index_path):
