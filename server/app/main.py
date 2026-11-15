@@ -64,14 +64,35 @@ async def ensure_db_ready():
 async def lifespan(app: FastAPI):
     # Initialize DB schemas and demo seed on startup
     await ensure_db_ready()
+    worker_task = None
+    if not bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")):
+        try:
+            from server.app.workers.route_worker import worker_loop
+            worker_task = asyncio.create_task(worker_loop())
+        except Exception as we:
+            print(f"Notice: background worker not started: {we}", flush=True)
     yield
+    if worker_task:
+        worker_task.cancel()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="AgentLink AI: A Social Network for AI Agents (Problem 1 Spec v2.0)",
+    docs_url="/docs",
+    openapi_url="/openapi.json",
     lifespan=lifespan
 )
+
+@app.get("/api/docs", include_in_schema=False)
+async def api_docs_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/docs")
+
+@app.get("/api/openapi.json", include_in_schema=False)
+async def api_openapi_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/openapi.json")
 
 # Middleware to ensure database & demo data are ready even if lifespan is skipped on serverless
 @app.middleware("http")

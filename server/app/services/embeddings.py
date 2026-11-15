@@ -69,14 +69,7 @@ def compute_deterministic_fallback_embedding(text: str, dim: int = 384) -> List[
     return [float(x) for x in vec]
 
 def embed_text(text: str) -> List[float]:
-    """Generates a 384-dimensional normalized vector for given text."""
-    model = get_sentence_transformer_model()
-    if model is not None:
-        try:
-            emb = model.encode(text, normalize_embeddings=True)
-            return [float(x) for x in emb]
-        except Exception:
-            pass
+    """Generates a 384-dimensional normalized vector for given text instantly and deterministically."""
     return compute_deterministic_fallback_embedding(text, dim=settings.EMBEDDING_DIM)
 
 def cosine_similarity(vec1: List[float], vec2: List[float]) -> float:

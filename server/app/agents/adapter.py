@@ -68,8 +68,9 @@ class LLMAdapter:
         # 2. LIVE_HOSTED (Gemini)
         if self.provider == "gemini" and settings.GEMINI_API_KEY:
             try:
+                gemini_model = self.model if "gemini" in self.model.lower() else "gemini-1.5-flash"
                 # Direct Gemini REST call with JSON mode
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={settings.GEMINI_API_KEY}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={settings.GEMINI_API_KEY}"
                 async with httpx.AsyncClient(timeout=settings.MODEL_TIMEOUT_SECONDS) as client:
                     resp = await client.post(
                         url,

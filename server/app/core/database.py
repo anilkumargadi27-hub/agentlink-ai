@@ -142,13 +142,34 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 async def init_db() -> None:
+    global _engine, _session_maker
+    import server.app.models.all_models  # noqa: Ensure models are registered in Base.metadata
+    
     eng = get_engine()
-    async with eng.begin() as conn:
-        if eng.dialect.name == "postgresql":
-            try:
-                from sqlalchemy import text
-                await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
-                await conn.execute(text('CREATE EXTENSION IF NOT EXISTS vector;'))
-            except Exception as ext_err:
-                print(f"Postgres extension notice: {ext_err}", flush=True)
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with eng.begin() as conn:
+            if eng.dialect.name == "postgresql":
+                try:
+                    from sqlalchemy import text
+                    await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))
+                    await conn.execute(text('CREATE EXTENSION IF NOT EXISTS vector;'))
+                except Exception as ext_err:
+                    print(f"Postgres extension notice: {ext_err}", flush=True)
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as exc:
+        print(f"init_db primary engine failure: {exc}. Switching to resilient SQLite in /tmp", flush=True)
+        _engine = create_async_engine(
+            "sqlite+aiosqlite:////tmp/agentlink.db",
+            echo=False,
+            connect_args={"check_same_thread": False},
+            poolclass=NullPool,
+            future=True
+        )
+        _session_maker = async_sessionmaker(
+            bind=_engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autoflush=False
+        )
+        async with _engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
